@@ -1,8 +1,8 @@
 ## Mood Barometer
-This application is created to stream twitter and displayed sentiment values.
+This application will stream twitter and displayed sentiment values.
 
-Using websockets to create a persistent connection to clients, the SERVER can
- broadcast real time udpates.
+Using WebSockets to create a persistent connection to clients, the Server can
+ broadcast real time updates.
 
  To run simply:
 >  `python server.py`
