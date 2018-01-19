@@ -3,7 +3,9 @@ import tornado.ioloop
 import tornado.websocket
 import tweepy
 import threading
+import settings
 from textblob import TextBlob
+import dataset
 
 """Creation of our websocket to communicate information to our users"""
 class EstablishWebsocket(tornado.websocket.WebSocketHandler):
@@ -17,11 +19,14 @@ class EstablishWebsocket(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
         return
+        #TODO
+        #Load up all cached data to bring users up to date upon connecting.
         #We dont need to accept messages from the client.
 
     def on_close(self):
         print("Websocket is closing...")
         self.websockets.remove(self)
+        self.close() #Close the connection once the user disconnects.
 
 
 """This section deals with Tornados  routing, and setups."""
@@ -44,14 +49,13 @@ def make_app():
    to the websocket, to receive updates from."""
 TRACKING_TERMS = ['#uk'] #Edit this value to change what to stream.
 
-"""Authentication tokens for our twitter streamer."""
-consumer_key = ''
-consumer_secret = ''
-access_token = ''
-access_token_secret = ''
+auth = tweepy.OAuthHandler(settings.consumer_key, settings.consumer_secret)
+auth.set_access_token(settings.access_token, settings.access_token_secret)
 
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
+#setting up database connections.
+db = dataset.connect('sqlite:///database/twitter.db')
+table = db['tweets']
+value_table = db['score']
 
 class StreamListener(tweepy.StreamListener, EstablishWebsocket):
 
@@ -64,10 +68,16 @@ class StreamListener(tweepy.StreamListener, EstablishWebsocket):
         if polarity == 0.0:
             return
 
+        table.insert(dict(
+            created_at = status.created_at,
+            polarity = polarity
+        ))
+        print(polarity)
         string = str(polarity)
+        out_dict = {'Tweet': status.text, 'Polarity': string }
         #Write out the updated information to the clients.
         for websocket in EstablishWebsocket.websockets:
-            websocket.write_message(status.text + ' + ' + string)
+            websocket.write_message(out_dict)
 
     def on_error(self, error):
         if error == 420:
@@ -83,6 +93,8 @@ class StreamListener(tweepy.StreamListener, EstablishWebsocket):
     def remove_redundantData():
         """Accesses the database and removes all information older than 7 days.
            Updates the score for users and continues to stream inputs. """
+        #Send user "True" to update new from database
+
 
 
 if __name__ == "__main__":
