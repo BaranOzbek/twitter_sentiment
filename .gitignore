@@ -1,2 +1,4 @@
 #  Ignore secrets.py
 secrets.py
+database/
+__pycache__

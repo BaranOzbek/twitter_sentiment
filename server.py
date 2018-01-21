@@ -1,11 +1,11 @@
 from tornado import web
-import tornado.ioloop
-import tornado.websocket
+import tornado.ioloop, tornado.websocket
 import tweepy
-import threading
-import settings
 from textblob import TextBlob
 import dataset
+import settings
+#Python Libraries
+import time, datetime, threading
 
 """Creation of our websocket to communicate information to our users"""
 class EstablishWebsocket(tornado.websocket.WebSocketHandler):
@@ -29,32 +29,16 @@ class EstablishWebsocket(tornado.websocket.WebSocketHandler):
         self.close() #Close the connection once the user disconnects.
 
 
-"""This section deals with Tornados  routing, and setups."""
-class MainHandler(tornado.web.RequestHandler):
-    def get(self):
-        #Pass our tracking terms, to display what we are streaming over.
-        self.render("templates/index.html", TRACKING_TERMS=TRACKING_TERMS)
-
-def make_app():
-    return tornado.web.Application([
-        (r'/', MainHandler),
-        (r'/websocket', EstablishWebsocket),
-        (r'/static/(.*)', web.StaticFileHandler, {'path': 'static/' }),
-        ], autoreload=True) #Turn off autoreload when in production.
-
-
-
-
 """This section connects our streamer
    to the websocket, to receive updates from."""
-TRACKING_TERMS = ['#uk'] #Edit this value to change what to stream.
+TRACKING_TERMS = ['trump'] #Edit this value to change what to stream.
 
 auth = tweepy.OAuthHandler(settings.consumer_key, settings.consumer_secret)
 auth.set_access_token(settings.access_token, settings.access_token_secret)
 
 #setting up database connections.
 db = dataset.connect('sqlite:///database/twitter.db')
-table = db['tweets']
+tweetDB = db['tweets']
 value_table = db['score']
 
 class StreamListener(tweepy.StreamListener, EstablishWebsocket):
@@ -68,14 +52,16 @@ class StreamListener(tweepy.StreamListener, EstablishWebsocket):
         if polarity == 0.0:
             return
 
-        table.insert(dict(
-            created_at = status.created_at,
+        created_at = status.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        print(polarity)
+        tweetDB.insert(dict(
+            created_at = created_at,
             polarity = polarity
         ))
-        print(polarity)
-        string = str(polarity)
-        out_dict = {'Tweet': status.text, 'Polarity': string }
-        #Write out the updated information to the clients.
+
+
+        out_dict = {'Tweet': status.text, 'Polarity': polarity, 'Created_at': created_at }
+        #Write out the updated information to the clientsself.
         for websocket in EstablishWebsocket.websockets:
             websocket.write_message(out_dict)
 
@@ -96,6 +82,19 @@ class StreamListener(tweepy.StreamListener, EstablishWebsocket):
         #Send user "True" to update new from database
 
 
+"""This section deals with Tornado routing, and setups."""
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        #Pass our tracking terms, to display what we are streaming over.
+        #And pass the database to display.
+        self.render("templates/index.html", TRACKING_TERMS=TRACKING_TERMS)
+
+def make_app():
+    return tornado.web.Application([
+        (r'/', MainHandler),
+        (r'/websocket', EstablishWebsocket),
+        (r'/static/(.*)', web.StaticFileHandler, {'path': 'static/' }),
+        ], autoreload=True) #Turn off autoreload when in production.
 
 if __name__ == "__main__":
     threading.Thread(target=StreamListener.run_stream).start()

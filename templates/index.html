@@ -3,11 +3,12 @@
 
   <head>
     <link rel="stylesheet" type="text/css" href="/static/styles.css">
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript" src="/static/googleChart.js"></script>
     <title>Streamer</title>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="/static/highcharts.js"></script>
     <script type="text/javascript " src="/static/ws.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Raleway:300" rel="stylesheet">
   </head>
 
@@ -16,15 +17,14 @@
   </header>
 
   <body>
-    <div class="headings" id="status">What do people think?</div>
-    <div id="chart_div" style="width:800px; height: 500px; margin: 0 auto;" align="center"></div>
+    <div id="highCharts" style="min-width: 310px; height: 400px; margin: 0 auto"></div><br>
     <div class="headings" id="streaming">Currently streaming:
       <div id="currStream">
         {% for term in TRACKING_TERMS %}
           {{ term }}
         {% end %}
       </div>
-    </div><br>
+    </div>
     <div class="headings">Most recent tweet: <p id="tweet"><p><br></div>
   </body>
 </html>

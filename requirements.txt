@@ -1,4 +1,4 @@
-tornado
-tweepy
-textblob
-dataset
+tornado==4.5.3
+tweepy==3.5.0
+textblob==0.15.0
+dataset==1.0.5
