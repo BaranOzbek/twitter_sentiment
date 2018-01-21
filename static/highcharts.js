@@ -33,8 +33,8 @@ $(document).ready(function(){
                         y2: 1
                     },
                     stops: [
-                        [0, '#8ef9ff'],
-                        [1, '#ffa5a5']
+                        [0, '#b3d9ff'],
+                        [1, '#ffe6e6']
                     ]
                 },
                 marker: {
@@ -52,7 +52,7 @@ $(document).ready(function(){
 
         series: [{
             type: 'area',
-            color: '#a5f9ff',
+            color: '#b3d9ff',
             name: 'Polarity',
             data: []
         }]
