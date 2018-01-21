@@ -1,24 +1,25 @@
 /* Contains the designs of the application.*/
-html, body {
-  height: 100%;
-  background-color: #F4F4F4;
-}
-html {
-  margin: auto;
-}
 body {
+  margin: 0;
+  background-color: #F4F4F4;
   vertical-align: middle;
   text-align: center;
-  padding: 10px;
 }
-h1 {
-  color: #C0B283;
+.navbar {
+  width: auto;
+  background-color: #282627;
 }
 .headings {
   color: #C0B283;
   font-family: 'Raleway';
   font-weight: bold;
-
+}
+.title {
+  padding: 20px;
+  margin: 0;
+  font-size: 23px;
+  color: #C7BCA8;
+  font-family: 'Raleway';
 }
 #currStream {
   border: 5px solid black;

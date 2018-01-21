@@ -2,7 +2,6 @@
 <html>
 
   <head>
-    <link rel="stylesheet" type="text/css" href="/static/styles.css">
     <title>Streamer</title>
     <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -10,13 +9,14 @@
     <script src="/static/highcharts.js"></script>
     <script type="text/javascript " src="/static/ws.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Raleway:300" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
   </head>
 
-  <header>
-    <h1>Mood barometer</h1>
-  </header>
-
   <body>
+    <div class="navbar">
+        <p class="title"><b>Streamer </b><br>
+          Sentiment Analysis</p>
+    </div><br>
     <div id="highCharts" style="min-width: 310px; height: 400px; margin: 0 auto"></div><br>
     <div class="headings" id="streaming">Currently streaming:
       <div id="currStream">
