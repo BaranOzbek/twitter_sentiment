@@ -2,10 +2,12 @@ from tornado import web
 import tornado.ioloop, tornado.websocket
 import tweepy
 from textblob import TextBlob
-import dataset
+import sqlite3
 import settings
 #Python Libraries
-import time, datetime, threading
+import datetime, threading, json
+
+TRACKING_TERMS = ['uk'] #Edit this value to change what to stream.
 
 """Creation of our websocket to communicate information to our users"""
 class EstablishWebsocket(tornado.websocket.WebSocketHandler):
@@ -19,9 +21,6 @@ class EstablishWebsocket(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
         return
-        #TODO
-        #Load up all cached data to bring users up to date upon connecting.
-        #We dont need to accept messages from the client.
 
     def on_close(self):
         print("Websocket is closing...")
@@ -31,39 +30,36 @@ class EstablishWebsocket(tornado.websocket.WebSocketHandler):
 
 """This section connects our streamer
    to the websocket, to receive updates from."""
-TRACKING_TERMS = ['trump'] #Edit this value to change what to stream.
-
 auth = tweepy.OAuthHandler(settings.consumer_key, settings.consumer_secret)
 auth.set_access_token(settings.access_token, settings.access_token_secret)
-
-#setting up database connections.
-db = dataset.connect('sqlite:///database/twitter.db')
-tweetDB = db['tweets']
-value_table = db['score']
 
 class StreamListener(tweepy.StreamListener, EstablishWebsocket):
 
     def on_status(self, status):
-        #Prevents unusable tweets, to provide accurate information.
-        if (status.retweeted) or ('RT @' in status.text):
-            return
+        #while time != 00:00..do
+            #Connect to the database
+            dbTemp = sqlite3.connect("database/twitter.db")
+            cursorTemp = dbTemp.cursor()
 
-        polarity = TextBlob(status.text).sentiment.polarity
-        if polarity == 0.0:
-            return
+            #Prevents unusable tweets, to provide accurate information.
+            if (status.retweeted) or ('RT @' in status.text):
+                return
 
-        created_at = status.created_at.strftime('%Y-%m-%d %H:%M:%S')
-        print(polarity)
-        tweetDB.insert(dict(
-            created_at = created_at,
-            polarity = polarity
-        ))
+            polarity = TextBlob(status.text).sentiment.polarity
+            if polarity == 0.0:
+                return
 
+            created_at = (status.created_at.strftime('%Y-%m-%d %H:%M:%S.')+(datetime.datetime.now().strftime('%f')))
 
-        out_dict = {'Tweet': status.text, 'Polarity': polarity, 'Created_at': created_at }
-        #Write out the updated information to the clientsself.
-        for websocket in EstablishWebsocket.websockets:
-            websocket.write_message(out_dict)
+            cursorTemp.execute("INSERT INTO tweets VALUES (?,?)", (datetime.datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S.%f'), polarity))
+            dbTemp.commit()
+            cursorTemp.close()
+
+            out_dict = {'Tweet': status.text, 'Polarity': polarity, 'Created_at': created_at }
+            #Write out the updated information to the clients.
+            for websocket in EstablishWebsocket.websockets:
+                websocket.write_message(out_dict)
+        #end loop, call self.run_stream()
 
     def on_error(self, error):
         if error == 420:
@@ -76,11 +72,15 @@ class StreamListener(tweepy.StreamListener, EstablishWebsocket):
         stream = tweepy.Stream(auth, listener=streamListener)
         stream.filter(track=TRACKING_TERMS)
 
-    def remove_redundantData():
+    def remove_Data():
         """Accesses the database and removes all information older than 7 days.
            Updates the score for users and continues to stream inputs. """
-        #Send user "True" to update new from database
-
+        db = sqlite3.connect("/database/twitter.db")
+        cursor = db.cursor()
+        #Remove data older than 7 days.. Run each day.
+        cursor.execute('''DELETE FROM tweets WHERE created_at <= date('now', '-7')''')
+        db.commit()
+        cursor.close()
 
 """This section deals with Tornado routing, and setups."""
 class MainHandler(tornado.web.RequestHandler):
@@ -89,9 +89,23 @@ class MainHandler(tornado.web.RequestHandler):
         #And pass the database to display.
         self.render("templates/index.html", TRACKING_TERMS=TRACKING_TERMS)
 
+class DataHandler(tornado.web.RequestHandler):
+    def get(self):
+        db = sqlite3.connect("database/twitter.db")
+        cursor = db.cursor()
+        cursor.execute("SELECT created_at, polarity FROM tweets ORDER BY created_at ASC")
+        self.write(json.dumps(cursor.fetchall()))
+        cursor.close()
+
 def make_app():
+    initdb = sqlite3.connect("database/twitter.db")
+    cursor = initdb.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS tweets (created_at datetime, polarity float)''')
+    cursor.close()
+
     return tornado.web.Application([
         (r'/', MainHandler),
+        (r'/getdata.json', DataHandler),
         (r'/websocket', EstablishWebsocket),
         (r'/static/(.*)', web.StaticFileHandler, {'path': 'static/' }),
         ], autoreload=True) #Turn off autoreload when in production.

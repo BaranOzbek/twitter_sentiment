@@ -1,8 +1,10 @@
+//Wrap initiation with function to prevent external js access.
+(function() {
 //Establish a new WebSocket, Remember to change local address accordingly!
 var ws = new WebSocket("ws://127.0.0.1:8000/websocket");
 
 ws.onopen = function(){
-  
+
 };
 
 ws.onmessage = function(event) {
@@ -18,3 +20,5 @@ ws.onmessage = function(event) {
 ws.onerror = function(){
   alert("Can not establish WebSocket.");
 };
+
+});();
