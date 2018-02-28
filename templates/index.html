@@ -3,11 +3,6 @@
 
   <head>
     <title>Streamer</title>
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="/static/highcharts.js"></script>
-    <script type="text/javascript " src="/static/ws.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Raleway:300" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="/static/styles.css">
   </head>
@@ -17,7 +12,10 @@
         <p class="title"><b>Streamer </b><br>
           Sentiment Analysis</p>
     </div><br>
-    <div id="highCharts" style="min-width: 310px; height: 400px; margin: 0 auto"></div><br>
+
+    <div id="highCharts-line" style="min-width: 310px; height: 400px; margin: 0 auto">
+    </div><br>
+
     <div class="headings" id="streaming">Currently streaming:
       <div id="currStream">
         {% for term in TRACKING_TERMS %}
@@ -25,6 +23,47 @@
         {% end %}
       </div>
     </div>
-    <div class="headings">Most recent tweet: <p id="tweet"><p><br></div>
+
+    <div class="headings">Most recent tweet:
+      <div class="tweet_container">
+        <p id="tweet"></p>
+      </div>
+    </div>
+
+    <div class="section-statistics">
+
+      <p class="title">
+        Natural Language Statistics
+      </p><br>
+
+      <table bgcolor="#282627"  cellpadding="10" style="padding-left:20px;">
+        <td>
+          <div id="highCharts-pie" style="min-width: 410px; height: 400px; max-width: 600px; margin: 0 auto; padding-bottom:80px;">
+          </div>
+        </td>
+        <td>
+          <table bgcolor="#282627" cellpadding="10" style="padding-left: 40px;">
+            <td>
+              <p class="headings">
+                Common <span style="color: #64FF63;">Positive</span> Keywords by Quantity:
+              </p>
+            </td>
+            <tr>
+              <td>
+                <p class="headings">
+                   Common <span style="color: #FF6C6C;">Negative</span> Keywords by Quantity:
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </table>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="/static/highcharts.js"></script>
+    <script src="/static/ws.js"></script>
   </body>
 </html>

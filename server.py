@@ -5,7 +5,7 @@ from textblob import TextBlob
 import sqlite3
 import settings
 #Python Libraries
-import datetime, threading, json
+import datetime, threading, json, time
 
 TRACKING_TERMS = ['uk'] #Edit this value to change what to stream.
 
@@ -37,33 +37,48 @@ class StreamListener(tweepy.StreamListener, EstablishWebsocket):
 
     def on_status(self, status):
         #while time != 00:00..do
-            #Connect to the database
-            dbTemp = sqlite3.connect("database/twitter.db")
-            cursorTemp = dbTemp.cursor()
+        #Prevents unusable tweets, to provide accurate information.
+        if (status.retweeted) or ('RT @' in status.text):
+            return
 
-            #Prevents unusable tweets, to provide accurate information.
-            if (status.retweeted) or ('RT @' in status.text):
-                return
+        text = TextBlob(status.text)
+        polarity = text.sentiment.polarity
 
-            polarity = TextBlob(status.text).sentiment.polarity
-            if polarity == 0.0:
-                return
+        if polarity == 0.0:
+            return
 
-            created_at = (status.created_at.strftime('%Y-%m-%d %H:%M:%S.')+(datetime.datetime.now().strftime('%f')))
+        created_at = (status.created_at.strftime('%Y-%m-%dT%H:%M:%S.')+(datetime.datetime.now().strftime('%f')))
 
-            cursorTemp.execute("INSERT INTO tweets VALUES (?,?)", (datetime.datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S.%f'), polarity))
-            dbTemp.commit()
-            cursorTemp.close()
+        #Connect to the database and push to the database
+        dbTemp = sqlite3.connect("database/twitter.db")
+        cursorTemp = dbTemp.cursor()
+        cursorTemp.execute("INSERT INTO tweets VALUES (?,?)", (created_at,
+                            polarity))
+        dbTemp.commit()
+        cursorTemp.close()
 
-            out_dict = {'Tweet': status.text, 'Polarity': polarity, 'Created_at': created_at }
-            #Write out the updated information to the clients.
-            for websocket in EstablishWebsocket.websockets:
-                websocket.write_message(out_dict)
-        #end loop, call self.run_stream()
+        if (polarity >= 0.7) or (polarity <= -0.7):
+            #Add to get the percentages
+            out_dict = {'Tweet': status.text, 'Polarity': polarity, 'Created_at': created_at, 'Pie_val' : round(polarity, 1)}
+        else:
+            out_dict = {'Tweet': status.text, 'Polarity': polarity, 'Created_at': created_at, 'Pie_val' : 0}
+
+        #Write out the updated information as a dict object to the clients.
+        for websocket in EstablishWebsocket.websockets:
+            websocket.write_message(out_dict)
 
     def on_error(self, error):
-        if error == 420:
-            return False
+        print(error)
+
+    def remove_Data():
+        """Accesses the database and removes all information older than 7 days.
+            Updates the score for us    ers and continues to stream inputs."""
+        db = sqlite3.connect("/database/twitter.db")
+        cursor = db.cursor()
+        #Remove data older than 7 days.. Run each day.
+        cursor.execute('''DELETE FROM tweets WHERE created_at <= date('now', '-7')''')
+        db.commit()
+        cursor.close()
 
     def run_stream():
         """Method sets up our stream listener, and, uses filter to
@@ -72,15 +87,6 @@ class StreamListener(tweepy.StreamListener, EstablishWebsocket):
         stream = tweepy.Stream(auth, listener=streamListener)
         stream.filter(track=TRACKING_TERMS)
 
-    def remove_Data():
-        """Accesses the database and removes all information older than 7 days.
-           Updates the score for users and continues to stream inputs. """
-        db = sqlite3.connect("/database/twitter.db")
-        cursor = db.cursor()
-        #Remove data older than 7 days.. Run each day.
-        cursor.execute('''DELETE FROM tweets WHERE created_at <= date('now', '-7')''')
-        db.commit()
-        cursor.close()
 
 """This section deals with Tornado routing, and setups."""
 class MainHandler(tornado.web.RequestHandler):
@@ -91,16 +97,26 @@ class MainHandler(tornado.web.RequestHandler):
 
 class DataHandler(tornado.web.RequestHandler):
     def get(self):
+
         db = sqlite3.connect("database/twitter.db")
         cursor = db.cursor()
-        cursor.execute("SELECT created_at, polarity FROM tweets ORDER BY created_at ASC")
-        self.write(json.dumps(cursor.fetchall()))
+        sql = ('''SELECT created_at, polarity FROM tweets ORDER BY created_at ASC;
+        SELECT COUNT(*) FROM tweets WHERE polarity >= 0.7;
+        SELECT COUNT(*) FROM tweets WHERE polarity <= -0.7''')
+
+        get_data = {}
+        for count, result in enumerate(sql.split(';')):
+            values = cursor.execute(result)
+            get_data.update({count : cursor.fetchall()})
+
+        self.write(json.dumps(get_data))
         cursor.close()
 
 def make_app():
     initdb = sqlite3.connect("database/twitter.db")
     cursor = initdb.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS tweets (created_at datetime, polarity float)''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS tweets (created_at TEXT, polarity FLOAT)''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS words (word TEXT, word_count INT, polarity BOOLEAN)''')
     cursor.close()
 
     return tornado.web.Application([
