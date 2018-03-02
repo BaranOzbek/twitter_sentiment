@@ -1,5 +1,5 @@
 /**Establish a new WebSocket, Remember to change local address accordingly!**/
-var ws = new WebSocket("ws://127.0.0.1:8000/websocket");
+var ws = new WebSocket("ws://127.0.0.1:8080/websocket");
 
 ws.onopen = function(){
 
@@ -7,8 +7,8 @@ ws.onopen = function(){
 
 ws.onmessage = function(event){
   /**We use this function to update the graphs and other updating information**/
-  var line_chart = $('#highCharts-line').highcharts();
-  var pie_chart = $('#highCharts-pie').highcharts();
+  var line_chart = $('#highChartsLine').highcharts();
+  var pie_chart = $('#highChartsPie').highcharts();
   data = JSON.parse(event.data);
   tweet_date = Date.parse(data['Created_at']);
 
@@ -26,8 +26,13 @@ ws.onmessage = function(event){
   else if (pie_val == -1){
       pie_chart.series[0].setData([['Positive', posData],['Negative', negData+1]], true);
   }
+  else { return }
 };
 
 ws.onerror = function(){
   alert("Can not establish WebSocket, your Browser may not be compatible.");
+};
+
+ws.onclose = function(){
+
 };

@@ -13,8 +13,11 @@
           Sentiment Analysis</p>
     </div><br>
 
-    <div id="highCharts-line" style="min-width: 310px; height: 400px; margin: 0 auto">
-    </div><br>
+    <div id="highChartsLine" style="min-width: 310px; height: 400px; margin: 0 auto">
+    </div>
+    <button id="dayBtn"  type="button" onclick="updateChart(this.id)">7 Days</button>
+    <button id="hourBtn" type="button" onclick="updateChart(this.id)">24 Hours</button>
+    <button id="currentBtn" type="button" onclick="updateChart(this.id)">Current</button>
 
     <div class="headings" id="streaming">Currently streaming:
       <div id="currStream">
@@ -38,22 +41,27 @@
 
       <table bgcolor="#282627"  cellpadding="10" style="padding-left:20px;">
         <td>
-          <div id="highCharts-pie" style="min-width: 410px; height: 400px; max-width: 600px; margin: 0 auto; padding-bottom:80px;">
+          <div id="highChartsPie" style="min-width: 410px; height: 400px; max-width: 600px; margin: 0 auto; padding-bottom:80px;">
           </div>
         </td>
         <td>
           <table bgcolor="#282627" cellpadding="10" style="padding-left: 40px;">
             <td>
               <p class="headings">
-                Common <span style="color: #64FF63;">Positive</span> Keywords by Quantity:
+                Common <span style="color: #64FF63;">Positive</span> Keywords by Quantity:<br>
+                Press a word for more information.
               </p>
             </td>
+            <tr id="posWord">
+            </tr>
             <tr>
               <td>
                 <p class="headings">
                    Common <span style="color: #FF6C6C;">Negative</span> Keywords by Quantity:
                 </p>
               </td>
+              <tr id="negWord">
+              </tr>
             </tr>
           </table>
         </td>

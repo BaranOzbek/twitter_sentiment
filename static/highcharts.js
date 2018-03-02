@@ -1,17 +1,29 @@
-$.getJSON('http://127.0.0.1:8000/getdata.json',
+//Function processing line graph data for input.
+function parseData(data){
+  var line_temp = [];
+  for(i in data){
+    tweet_date = Date.parse(data[i][0]);
+    line_temp.push([(tweet_date), data[i][1]]);
+  }
+  return line_temp;
+}
+
+$.getJSON('http://127.0.0.1:8080/getdata',
  function(data){
-  //Retrieve all data to be inputted into the graphs, Needs to be parsed.
-  var line_data = data['0'];
+  //Retrieve all data to be inputted into the graphs
+  var line_temp = parseData(data['0']);
   var pieX = data['1'];
   var pieY = data['2'];
-
-  var line_temp = [];
-  for(i in line_data){
-    tweet_date = Date.parse(line_data[i][0]);
-    line_temp.push([(tweet_date), line_data[i][1]]);
+  var posWord = data['3'];
+  var negWord = data['4'];
+  console.log(line_temp);
+  //Button f or each positive and negative word.
+  for(i in posWord){
+    $("#posWord").append('<button id='+ '"' + posWord[i] + '"' + 'class="button posWord"  onclick="updateChart(this.id)">' + posWord[i] + '</button>');
+    $("#negWord").append('<button id='+ '"' + negWord[i] + '"' +  'class="button negWord"  onclick="updateChart(this.id)">' + negWord[i] + '</button>');
   }
 
-  Highcharts.chart('highCharts-line', {
+  Highcharts.chart('highChartsLine', {
       chart: {
           backgroundColor: '#F4F4F4',
           zoomType: 'x',
@@ -37,6 +49,9 @@ $.getJSON('http://127.0.0.1:8000/getdata.json',
           enabled: false
       },
       plotOptions: {
+          series: {
+            connectNulls: true
+          },
           line: {
               fillColor: {
                   linearGradient: {
@@ -65,10 +80,9 @@ $.getJSON('http://127.0.0.1:8000/getdata.json',
           name: 'Polarity',
           data: line_temp
       }]
-
     });
       //Chart for our pie semi circle
-      Highcharts.chart('highCharts-pie', {
+      Highcharts.chart('highChartsPie', {
           exporting: {
             enabled: false
           },
@@ -120,3 +134,30 @@ $.getJSON('http://127.0.0.1:8000/getdata.json',
           }]
       });
   });
+
+function updateChart(btn_id) {
+  var chart = $('#highChartsLine').highcharts();
+  if(btn_id == "currentBtn"){
+    //Remove all data within the series.
+      chart.series[0].setData([], true);
+  }
+  else if(btn_id == "dayBtn"){
+    $.getJSON('http://127.0.0.1:8080/getdata?key='+btn_id,
+    function(data){
+      var line_temp = parseData(data['0']);
+      chart.series[0].setData(line_temp, true);
+    });
+  }
+  else {
+    $.getJSON('http://127.0.0.1:8080/getdata?key='+btn_id,
+    function(data){
+      var line_temp = parseData(data['0']);
+      chart.series[0].setData(line_temp, true);
+    });
+  }
+}
+
+function getWordData(btn_id){
+
+
+}

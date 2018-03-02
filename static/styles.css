@@ -47,3 +47,18 @@ body {
   color: black;
   padding-bottom: 10px;
 }
+.button{
+  background-color: #282627;
+  border-style: solid;
+  border-color: #21B6A8;
+  border-width: 1px;
+  padding: 10px 25px;
+  font-size: 23px;
+  cursor:pointer;
+}
+.posWord{
+  color: #64FF63;
+}
+.negWord{
+  color: #FF6C6C;
+}
