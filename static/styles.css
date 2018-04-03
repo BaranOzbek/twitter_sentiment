@@ -47,6 +47,17 @@ body {
   color: black;
   padding-bottom: 10px;
 }
+#word-information{
+  border: solid #C0B283;
+  margin: auto;
+}
+.wordInfo{
+  padding: 25px;
+  border: solid #C0B283;
+  font-size: 20px;
+  color: white;
+  max-width: 275px;
+}
 .button{
   background-color: #282627;
   border-style: solid;
