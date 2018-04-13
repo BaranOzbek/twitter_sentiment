@@ -9,6 +9,11 @@ body {
   width: auto;
   background-color: #282627;
 }
+.navButtons {
+  padding-right: 20px;
+  padding-top: 10px;
+  float:right;
+}
 .headings {
   color: #C0B283;
   font-family: 'Raleway';
@@ -34,6 +39,11 @@ body {
   padding: 10px;
   width: 60%;
 }
+a:link, a:visited {
+    text-decoration: none;
+    color: white;
+}
+
 #currStream {
   border: 5px solid black;
   background-color: white;

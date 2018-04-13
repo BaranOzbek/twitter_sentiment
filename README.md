@@ -6,6 +6,7 @@ Using WebSockets to create a persistent connection to clients, the Server can
 
  To run simply:
 >  `pip install -r requirements.txt`
+>  `python -m textblob.download_corpora`
 >  `python server.py`
 
 Note: Need to add consumer keys and secrets to authorise a connection with Twitter.

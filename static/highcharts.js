@@ -176,10 +176,10 @@ function getWordData(btn_id){
          scrollTop: $("#word-title").offset().top
      }, 1000);
    }
-
+  selectedWord = btn_id;
   if(btn_id.indexOf("Pos") != -1){
     string = btn_id.replace("Pos","");
-    selectedWord = btn_id;
+
       for(var i = 0; i < posWords.length; ++i){
         if(posWords[i][0] == string){
           position = i;
@@ -190,7 +190,6 @@ function getWordData(btn_id){
   }
   else if(btn_id.indexOf("Neg") != -1){
     string = btn_id.replace("Neg","");
-    selectedWord = btn_id;
     for(var i = 0; i < negWords.length; ++i){
       if(negWords[i][0] == string){
         position = i;

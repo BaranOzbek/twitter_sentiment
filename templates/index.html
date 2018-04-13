@@ -9,9 +9,18 @@
 
   <body>
     <div class="navbar">
-        <p class="title"><b>Streamer </b><br>
+        <div class ="navButtons">
+          {% if current_user != None %}
+            <a href="/admin">Settings</a> |
+            <a href="/logout">logout</a>
+          {% else %}
+            <a href="/login">Login</a>
+          {% end %}
+        </div><br>
+        <p class="title"><b>Streamer</b><br>
           Sentiment Analysis</p>
-    </div><br>
+    </div>
+    <br>
 
     <div id="highChartsLine" style="min-width: 310px; height: 400px; margin: 0 auto">
     </div>

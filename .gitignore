@@ -1,5 +1,0 @@
-#  Ignore secrets.py
-secrets.py
-database/
-__pycache__
-settings.py

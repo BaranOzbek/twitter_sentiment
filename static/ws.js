@@ -18,23 +18,25 @@ ws.onmessage = function(event){
   posTweets = data['PositiveTweets'];
   negTweets = data['NegativeTweets'];
 
+  updateWords();
+  if(selectedWord != null){
+    getWordData(selectedWord);
+  }
+
   line_chart.series[0].addPoint([(tweet_date),data['Polarity']], true);
   $("#tweet").empty().append(data['Tweet']);
 
   //Gather previous values from chart
   posData = pie_chart.series[0].data[0].y;
   negData = pie_chart.series[0].data[1].y;
-  if(pie_val == 1){
+  if (pie_val != 1 && pie_val != -1){ return }
+  else if (pie_val == 1){
     pie_chart.series[0].setData([['Positive', posData+1],['Negative', negData]], true);
   }
-  else if (pie_val == -1){
+  else {
       pie_chart.series[0].setData([['Positive', posData],['Negative', negData+1]], true);
-  } else { return }
+  } 
 
-  updateWords();
-  if(selectedWord != null){
-    getWordData(selectedWord);
-  }
 };
 
 ws.onerror = function(){
